@@ -45,5 +45,6 @@ class AuthViewModel : ViewModel() {
         DatosUsuarios.listaUsuarios.add(nuevoUsuario)
 
         return true
+
     }
 }

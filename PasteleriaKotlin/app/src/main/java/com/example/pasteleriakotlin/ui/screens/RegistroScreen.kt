@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,8 +21,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavOptionsBuilder
-import androidx.navigation.PopUpToBuilder
 import com.example.pasteleriakotlin.navegacion.RUTA_LOGIN
 import com.example.pasteleriakotlin.ui.viewModel.AuthViewModel
 import com.example.pasteleriakotlin.navegacion.RUTA_REGISTRO
@@ -43,7 +40,7 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = 
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Crear Cuenta", style = MaterialTheme.typography.headlineMedium)
+        Text("Crear Cuenta", style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -69,7 +66,7 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = 
         if (errorRegistro) {
             Text(
                 "El email ya está en uso",
-                color = MaterialTheme.colorScheme.error
+                color = androidx.compose.material3.MaterialTheme.colorScheme.error
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
@@ -80,7 +77,7 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = 
 
                 errorRegistro = false
                 navController.navigate(RUTA_LOGIN) {
-                    NavOptionsBuilder.popUpTo(RUTA_REGISTRO) { PopUpToBuilder.inclusive = true }
+                    popUpTo(RUTA_REGISTRO) { inclusive = true }
                 }
             } else {
 

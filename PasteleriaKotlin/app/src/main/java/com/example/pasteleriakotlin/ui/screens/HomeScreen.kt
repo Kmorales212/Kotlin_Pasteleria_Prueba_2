@@ -10,7 +10,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -20,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.NavOptionsBuilder
 import com.example.pasteleriakotlin.navegacion.RUTA_CARRITO
 import com.example.pasteleriakotlin.navegacion.RUTA_CATALOGO
 import com.example.pasteleriakotlin.navegacion.RUTA_CONTACTO
@@ -47,7 +45,7 @@ fun HomeScreen(navController: NavController) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     "¡Bienvenidos a Pastelería Kotlin!",
-                    style = MaterialTheme.typography.headlineMedium
+                    style = androidx.compose.material3.MaterialTheme.typography.headlineMedium
                 )
                 Text("Somos una pastelería dedicada a crear los momentos más dulces.")
             }
@@ -68,8 +66,8 @@ fun BottomNavigationBar(navController: NavController, currentRoute: String) {
                 if (currentRoute != RUTA_HOME) {
                     navController.navigate(RUTA_HOME) {
 
-                        NavOptionsBuilder.popUpTo(navController.graph.startDestinationId)
-                        NavOptionsBuilder.launchSingleTop = true
+                        popUpTo(navController.graph.startDestinationId)
+                        launchSingleTop = true
                     }
                 }
             }
@@ -83,8 +81,8 @@ fun BottomNavigationBar(navController: NavController, currentRoute: String) {
             onClick = {
                 if (currentRoute != RUTA_CATALOGO) {
                     navController.navigate(RUTA_CATALOGO) {
-                        NavOptionsBuilder.popUpTo(navController.graph.startDestinationId)
-                        NavOptionsBuilder.launchSingleTop = true
+                        popUpTo(navController.graph.startDestinationId)
+                        launchSingleTop = true
                     }
                 }
             }
@@ -98,8 +96,8 @@ fun BottomNavigationBar(navController: NavController, currentRoute: String) {
             onClick = {
                 if (currentRoute != RUTA_CARRITO) {
                     navController.navigate(RUTA_CARRITO) {
-                        NavOptionsBuilder.popUpTo(navController.graph.startDestinationId)
-                        NavOptionsBuilder.launchSingleTop = true
+                        popUpTo(navController.graph.startDestinationId)
+                        launchSingleTop = true
                     }
                 }
             }
@@ -113,8 +111,8 @@ fun BottomNavigationBar(navController: NavController, currentRoute: String) {
             onClick = {
                 if (currentRoute != RUTA_CONTACTO) {
                     navController.navigate(RUTA_CONTACTO) {
-                        NavOptionsBuilder.popUpTo(navController.graph.startDestinationId)
-                        NavOptionsBuilder.launchSingleTop = true
+                        popUpTo(navController.graph.startDestinationId)
+                        launchSingleTop = true
                     }
                 }
             }

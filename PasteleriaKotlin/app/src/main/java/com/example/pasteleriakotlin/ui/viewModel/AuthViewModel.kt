@@ -1,50 +1,51 @@
 package com.example.pasteleriakotlin.ui.viewModel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.example.pasteleria.data.DatosUsuarios
-import com.example.pasteleria.data.Usuario
-import kotlin.collections.any
-import kotlin.collections.find
-
-
+import androidx.lifecycle.viewModelScope
+import com.example.pasteleriakotlin.datos.Usuario
+import com.example.pasteleriakotlin.network.RetrofitClient
+import kotlinx.coroutines.launch
 
 class AuthViewModel : ViewModel() {
-
 
     var emailUsuarioLogueado: String? = null
         private set
 
+    // Función para LOGIN (Ahora es asíncrona, no retorna Boolean directo)
+    // Usamos un "callback" (onResult) para avisar a la pantalla si funcionó o no
+    fun login(email: String, contrasena: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val usuarioLogin = Usuario(email = email, contrasena = contrasena)
+                // Llamada al Microservicio
+                val respuesta = RetrofitClient.apiService.login(usuarioLogin)
 
-    fun login(email: String, contrasena: String): Boolean {
-
-        val usuarioEncontrado = DatosUsuarios.listaUsuarios.find {
-            it.email == email && it.contrasena == contrasena
+                // Si llegamos aquí sin error, el login fue exitoso
+                emailUsuarioLogueado = respuesta.email
+                onResult(true)
+            } catch (e: Exception) {
+                // Si falla (401 Unauthorized o error de red)
+                Log.e("API_LOGIN", "Error: ${e.message}")
+                onResult(false)
+            }
         }
-
-        if (usuarioEncontrado != null) {
-            emailUsuarioLogueado = email
-            return true
-        }
-
-        return false
     }
 
+    // Función para REGISTRO
+    fun registrar(nombre: String, email: String, contrasena: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val nuevoUsuario = Usuario(nombre = nombre, email = email, contrasena = contrasena)
+                // Llamada al Microservicio
+                RetrofitClient.apiService.registrarUsuario(nuevoUsuario)
 
-    fun registrar(email: String, contrasena: String): Boolean {
-
-        val emailYaExiste = DatosUsuarios.listaUsuarios.any { it.email == email }
-
-        if (emailYaExiste) {
-            return false
+                // Si no hay error, registro exitoso
+                onResult(true)
+            } catch (e: Exception) {
+                Log.e("API_REGISTRO", "Error: ${e.message}")
+                onResult(false)
+            }
         }
-
-
-        val nuevoUsuario = Usuario(email = email, contrasena = contrasena)
-
-
-        DatosUsuarios.listaUsuarios.add(nuevoUsuario)
-
-        return true
-
     }
 }

@@ -28,8 +28,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -39,10 +41,6 @@ import com.example.pasteleriakotlin.datos.DatosEjemplo
 import com.example.pasteleriakotlin.datos.Producto
 import com.example.pasteleriakotlin.navegacion.RUTA_CATALOGO
 import com.example.pasteleriakotlin.ui.viewModel.CarritoViewModel
-import kotlin.text.all
-import kotlin.text.format
-import kotlin.text.isDigit
-import kotlin.text.toIntOrNull
 
 @Composable
 fun CatalogoScreen(
@@ -81,7 +79,6 @@ fun CatalogoScreen(
     }
 }
 
-
 @Composable
 fun ProductoCard(
     producto: Producto,
@@ -90,13 +87,13 @@ fun ProductoCard(
     var cantidad by remember { mutableStateOf("1") }
     val context = LocalContext.current
 
+    val haptic = LocalHapticFeedback.current
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column {
-
-
             Image(
                 painter = painterResource(id = producto.imagen),
                 contentDescription = producto.nombre,
@@ -105,8 +102,6 @@ fun ProductoCard(
                     .height(180.dp),
                 contentScale = ContentScale.Crop
             )
-
-
 
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -117,7 +112,6 @@ fun ProductoCard(
                     "Precio: $${"%.0f".format(producto.precio)}",
                     style = MaterialTheme.typography.bodyLarge
                 )
-
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -142,6 +136,8 @@ fun ProductoCard(
                         onClick = {
                             val cantNum = cantidad.toIntOrNull() ?: 0
                             if (cantNum > 0) {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+
                                 onAgregarClick(cantNum)
                                 Toast.makeText(
                                     context,
@@ -165,4 +161,4 @@ fun ProductoCard(
             }
         }
     }
-}
+ }

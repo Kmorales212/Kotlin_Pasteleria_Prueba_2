@@ -1,5 +1,6 @@
 package com.example.pasteleriakotlin.ui.screens
 
+import android.util.Patterns
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,8 +36,15 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = 
     var email by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }
     var errorRegistro by remember { mutableStateOf(false) }
+
+    var errorEmailInvalido by remember { mutableStateOf(false) }
+
     var isLoading by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    fun esEmailValido(email: String): Boolean {
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
 
     Column(
         modifier = Modifier
@@ -60,10 +68,22 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = 
 
         OutlinedTextField(
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {
+                email = it
+                errorEmailInvalido = false
+            },
             label = { Text("Email") },
+            isError = errorEmailInvalido,
             singleLine = true
         )
+
+        if (errorEmailInvalido) {
+            Text(
+                "Formato de correo no válido",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -89,18 +109,22 @@ fun RegistroScreen(navController: NavController, authViewModel: AuthViewModel = 
             CircularProgressIndicator()
         } else {
             Button(onClick = {
-                isLoading = true
-                errorRegistro = false
+                if (!esEmailValido(email)) {
+                    errorEmailInvalido = true
+                } else {
+                    isLoading = true
+                    errorRegistro = false
 
-                authViewModel.registrar(nombre, email, contrasena) { exito ->
-                    isLoading = false
-                    if (exito) {
-                        Toast.makeText(context, "Registro exitoso", Toast.LENGTH_SHORT).show()
-                        navController.navigate(RUTA_LOGIN) {
-                            popUpTo(RUTA_REGISTRO) { inclusive = true }
+                    authViewModel.registrar(nombre, email, contrasena) { exito ->
+                        isLoading = false
+                        if (exito) {
+                            Toast.makeText(context, "Registro exitoso", Toast.LENGTH_SHORT).show()
+                            navController.navigate(RUTA_LOGIN) {
+                                popUpTo(RUTA_REGISTRO) { inclusive = true }
+                            }
+                        } else {
+                            errorRegistro = true
                         }
-                    } else {
-                        errorRegistro = true
                     }
                 }
             }) {

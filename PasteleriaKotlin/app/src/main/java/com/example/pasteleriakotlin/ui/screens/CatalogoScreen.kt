@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,11 +18,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,9 +40,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.pasteleriakotlin.datos.DatosEjemplo
+import com.example.pasteleriakotlin.R
 import com.example.pasteleriakotlin.datos.Producto
 import com.example.pasteleriakotlin.navegacion.RUTA_CATALOGO
+import com.example.pasteleriakotlin.network.RetrofitClient
 import com.example.pasteleriakotlin.ui.viewModel.CarritoViewModel
 
 @Composable
@@ -47,6 +51,21 @@ fun CatalogoScreen(
     navController: NavController,
     carritoViewModel: CarritoViewModel = viewModel()
 ) {
+    var listaProductos by remember { mutableStateOf<List<Producto>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) } // Estado de carga
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        try {
+
+            listaProductos = RetrofitClient.apiService.obtenerProductos()
+            isLoading = false
+        } catch (e: Exception) {
+            isLoading = false
+            Toast.makeText(context, "Error al cargar el catálogo: Verifique conexión", Toast.LENGTH_LONG).show()
+        }
+    }
+
     Scaffold(
         topBar = {
             Text(
@@ -59,21 +78,30 @@ fun CatalogoScreen(
             BottomNavigationBar(navController = navController, currentRoute = RUTA_CATALOGO)
         }
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            val listaProductos = DatosEjemplo.catalogoProductos
-            items(listaProductos) { producto ->
-                ProductoCard(
-                    producto = producto,
-                    onAgregarClick = { cantidad ->
-                        carritoViewModel.agregarAlCarrito(producto, cantidad)
-                    }
-                )
+
+        if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(listaProductos) { producto ->
+                    ProductoCard(
+                        producto = producto,
+                        onAgregarClick = { cantidad ->
+                            carritoViewModel.agregarAlCarrito(producto, cantidad)
+                        }
+                    )
+                }
             }
         }
     }
@@ -86,8 +114,16 @@ fun ProductoCard(
 ) {
     var cantidad by remember { mutableStateOf("1") }
     val context = LocalContext.current
-
     val haptic = LocalHapticFeedback.current
+
+    val imageId = remember(producto.imagenNombre) {
+        val id = context.resources.getIdentifier(
+            producto.imagenNombre,
+            "drawable",
+            context.packageName
+        )
+        if (id == 0) R.drawable.ic_launcher_foreground else id
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -95,7 +131,7 @@ fun ProductoCard(
     ) {
         Column {
             Image(
-                painter = painterResource(id = producto.imagen),
+                painter = painterResource(id = imageId),
                 contentDescription = producto.nombre,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -161,4 +197,4 @@ fun ProductoCard(
             }
         }
     }
- }
+}

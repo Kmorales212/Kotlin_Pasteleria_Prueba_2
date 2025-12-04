@@ -1,5 +1,6 @@
 package com.example.pasteleriakotlin.network
 
+import com.example.pasteleriakotlin.datos.Producto
 import com.example.pasteleriakotlin.datos.Usuario
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -15,4 +16,6 @@ interface ApiService {
 
     @POST("usuarios/login")
     suspend fun login(@Body usuario: Usuario): Usuario
+    @GET("productos")
+    suspend fun obtenerProductos(): List<Producto>
 }

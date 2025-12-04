@@ -75,4 +75,5 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     testImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
 }

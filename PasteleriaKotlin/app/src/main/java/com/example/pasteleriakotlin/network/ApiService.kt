@@ -18,4 +18,7 @@ interface ApiService {
     suspend fun login(@Body usuario: Usuario): Usuario
     @GET("productos")
     suspend fun obtenerProductos(): List<Producto>
+
+    @POST("productos")
+    suspend fun crearProducto(@Body producto: Producto): Producto
 }

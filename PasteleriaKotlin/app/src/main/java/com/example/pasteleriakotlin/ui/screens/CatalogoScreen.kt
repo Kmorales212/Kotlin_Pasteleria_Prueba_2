@@ -3,9 +3,9 @@ package com.example.pasteleriakotlin.ui.screens
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,19 +15,26 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,6 +52,7 @@ import com.example.pasteleriakotlin.datos.Producto
 import com.example.pasteleriakotlin.navegacion.RUTA_CATALOGO
 import com.example.pasteleriakotlin.network.RetrofitClient
 import com.example.pasteleriakotlin.ui.viewModel.CarritoViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun CatalogoScreen(
@@ -52,18 +60,28 @@ fun CatalogoScreen(
     carritoViewModel: CarritoViewModel = viewModel()
 ) {
     var listaProductos by remember { mutableStateOf<List<Producto>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) } // Estado de carga
+    var isLoading by remember { mutableStateOf(true) }
+
+    var showDialog by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    fun cargarProductos() {
+        scope.launch {
+            try {
+                isLoading = true
+                listaProductos = RetrofitClient.apiService.obtenerProductos()
+                isLoading = false
+            } catch (e: Exception) {
+                isLoading = false
+                Toast.makeText(context, "Error al cargar: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
-        try {
-
-            listaProductos = RetrofitClient.apiService.obtenerProductos()
-            isLoading = false
-        } catch (e: Exception) {
-            isLoading = false
-            Toast.makeText(context, "Error al cargar el catálogo: Verifique conexión", Toast.LENGTH_LONG).show()
-        }
+        cargarProductos()
     }
 
     Scaffold(
@@ -73,6 +91,14 @@ fun CatalogoScreen(
                 style = MaterialTheme.typography.headlineLarge,
                 modifier = Modifier.padding(16.dp)
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { showDialog = true },
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = "Crear Producto", tint = MaterialTheme.colorScheme.onPrimary)
+            }
         },
         bottomBar = {
             BottomNavigationBar(navController = navController, currentRoute = RUTA_CATALOGO)
@@ -102,9 +128,83 @@ fun CatalogoScreen(
                         }
                     )
                 }
+                item { Spacer(modifier = Modifier.height(80.dp)) }
             }
         }
+
+        if (showDialog) {
+            NuevoProductoDialog(
+                onDismiss = { showDialog = false },
+                onProductoCreado = { nuevoProducto ->
+                    scope.launch {
+                        try {
+                            RetrofitClient.apiService.crearProducto(nuevoProducto)
+                            Toast.makeText(context, "Producto Creado!", Toast.LENGTH_SHORT).show()
+                            showDialog = false
+                            cargarProductos()
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Error al crear: ${e.message}", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            )
+        }
     }
+}
+
+@Composable
+fun NuevoProductoDialog(
+    onDismiss: () -> Unit,
+    onProductoCreado: (Producto) -> Unit
+) {
+    var nombre by remember { mutableStateOf("") }
+    var precioStr by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Nuevo Producto") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = nombre,
+                    onValueChange = { nombre = it },
+                    label = { Text("Nombre") }
+                )
+                OutlinedTextField(
+                    value = precioStr,
+                    onValueChange = {
+                        if (it.all { char -> char.isDigit() || char == '.' }) precioStr = it
+                    },
+                    label = { Text("Precio") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val precio = precioStr.toDoubleOrNull()
+                    if (nombre.isNotBlank() && precio != null && precio > 0) {
+
+                        val nuevo = Producto(
+                            id = null,
+                            nombre = nombre,
+                            precio = precio,
+                            imagenNombre = "pastel_chocolate"
+                        )
+                        onProductoCreado(nuevo)
+                    }
+                }
+            ) {
+                Text("Guardar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
 }
 
 @Composable

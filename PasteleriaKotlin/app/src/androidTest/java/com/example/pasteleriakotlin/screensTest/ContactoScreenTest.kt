@@ -3,6 +3,7 @@ package com.example.pasteleriakotlin.screensTest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo // Importante para listas largas
 import androidx.navigation.NavController
 import com.example.pasteleriakotlin.ui.screens.ContactoScreen
 import io.mockk.mockk
@@ -22,10 +23,14 @@ class ContactoScreenTest {
             ContactoScreen(navController = mockNavController)
         }
 
-        composeTestRule.onNodeWithText("Nuestras Sucursales").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Sucursal Centro").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Dirección: Avenida Ficticia 123, Centro").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Sucursal Oriente").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Sucursal Poniente").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Nuestras Ubicaciones").assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Sucursal Centro").performScrollTo().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Av. Alameda 123", substring = true).performScrollTo().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Sucursal Providencia").performScrollTo().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Sucursal Las Condes").performScrollTo().assertIsDisplayed()
     }
 }
